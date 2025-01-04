@@ -6,6 +6,7 @@ use tokio::net::TcpListener;
 use tower_http::trace::TraceLayer;
 
 mod routes;
+mod handlers;
 
 #[tokio::main]
 async fn main() {

@@ -2,7 +2,7 @@ use axum::{Json, response::IntoResponse};
 use reqwest::Client;
 use serde_json::json;
 use std::env;
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use uuid::Uuid;
 
 #[derive(serde::Serialize)]
@@ -12,11 +12,14 @@ struct NewGame {
 }
 
 pub async fn create_game() -> impl IntoResponse {
+
+    println!("create game called");
+
     dotenv().ok();
 
     let supabase_url = env::var("NEXT_PUBLIC_SUPABASE_URL").expect("SUPABASE_URL missing");
     let supabase_key = env::var("NEXT_PUBLIC_SUPABASE_ANON_KEY").expect("SUPABASE_ANON_KEY missing");
-    let table_name = env::var("SUPABASE_TABLE").expect("SUPABASE_TABLE missing");
+    let table_name = env::var("TABLE_NAME").expect("SUPABASE_TABLE missing");
 
     let client = Client::new();
 
