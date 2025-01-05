@@ -9,10 +9,24 @@ use uuid::Uuid;
 struct NewGame {
     id: Uuid,
     max_players: i32,
+    fill_with_bot: bool,
+    show_value_hand: bool,
+    initial_fiches: i32,
+    small_blind: i32,
 }
 
-pub async fn create_game() -> impl IntoResponse {
+#[derive(serde::Deserialize, Debug)]
+pub struct PayloadCreateGame {
+    max_players: i32,
+    fill_with_bot: bool,
+    show_value_hand: bool,
+    initial_fiches: i32,
+    small_blind: i32,
+}
+
+pub async fn create_game(Json(payload): Json<PayloadCreateGame>) -> impl IntoResponse {
     println!("create_game endpoint called");
+    println!("Payload received: {:?}", payload);
 
     dotenv().ok();
 
@@ -28,16 +42,30 @@ pub async fn create_game() -> impl IntoResponse {
 
     let client = Client::new();
 
+    if payload.max_players < 2 || payload.max_players > 30 {
+        return Json(json!({ "status": "error", "message": "max_players must be between 2 and 30" })).into_response();
+    }
+    
+    if payload.initial_fiches <= 0 {
+        return Json(json!({ "status": "error", "message": "initial_fiches must be greater than 0" })).into_response();
+    }
+    
+    if payload.small_blind <= 0 || payload.small_blind > payload.initial_fiches {
+        return Json(json!({ "status": "error", "message": "small_blind must be greater than 0 and less than initial_fiches" })).into_response();
+    }
+
     let new_game = NewGame {
         id: Uuid::new_v4(),
-        max_players: 4, // TODO cambiare con un parametro passato
+        max_players: payload.max_players,
+        fill_with_bot: payload.fill_with_bot,
+        show_value_hand: payload.show_value_hand,
+        initial_fiches: payload.initial_fiches,
+        small_blind: payload.small_blind,
     };
 
     println!("New game created with ID: {}", new_game.id);
 
     let url = format!("{}/rest/v1/{}", supabase_url, table_name);
-
-    println!("Sending POST request to URL: {}", url);
 
     let res = client
         .post(&url)
@@ -54,9 +82,7 @@ pub async fn create_game() -> impl IntoResponse {
     match res {
         Ok(response) if response.status().is_success() => {
             println!("Request succeeded with status: {}", response.status());
-            let game: serde_json::Value = response.json().await.unwrap();
-            println!("Response body: {:?}", game);
-            Json(json!({ "status": "success", "game": game })).into_response()
+            Json(json!({ "status": response.status().to_string() })).into_response()
         }
         Ok(response) => {
             println!("Request failed with status: {}", response.status());

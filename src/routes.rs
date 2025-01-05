@@ -1,4 +1,4 @@
-use axum::{routing::get, Router};
+use axum::{routing::{get, post}, Router};
 use serde_json::json;
 use crate::handlers;
 
@@ -8,5 +8,5 @@ pub fn create_routes() -> Router {
             "/",
             get(|| async { axum::Json(json!({ "message": "API HOME" })) }),
         )
-        .route("/create_game", get(handlers::create_game::create_game))
+        .route("/create_game", post(handlers::create_game::create_game))
 }
