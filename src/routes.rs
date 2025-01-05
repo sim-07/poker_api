@@ -9,4 +9,5 @@ pub fn create_routes() -> Router {
             get(|| async { axum::Json(json!({ "message": "API HOME" })) }),
         )
         .route("/create_game", post(handlers::create_game::create_game))
+        .route("/add_player", post(handlers::add_player::add_player))
 }

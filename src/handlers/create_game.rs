@@ -26,7 +26,7 @@ pub struct PayloadCreateGame {
 
 pub async fn create_game(Json(payload): Json<PayloadCreateGame>) -> impl IntoResponse {
     println!("create_game endpoint called");
-    println!("Payload received: {:?}", payload);
+    println!("Payload received create_game: {:?}", payload);
 
     dotenv().ok();
 
@@ -34,11 +34,6 @@ pub async fn create_game(Json(payload): Json<PayloadCreateGame>) -> impl IntoRes
     let supabase_key =
         env::var("NEXT_PUBLIC_SUPABASE_ANON_KEY").expect("SUPABASE_ANON_KEY missing");
     let table_name = env::var("TABLE_NAME").expect("SUPABASE_TABLE missing");
-
-    println!(
-        "Environment variables loaded:\n  - SUPABASE_URL: {}\n  - TABLE_NAME: {} - ANON KEY: {}",
-        supabase_url, table_name, supabase_key
-    );
 
     let client = Client::new();
 
