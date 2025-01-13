@@ -231,7 +231,7 @@ dependencies = [
  "axum 0.6.20",
  "axum-core 0.3.4",
  "bytes",
- "cookie",
+ "cookie 0.17.0",
  "futures-util",
  "http 0.2.12",
  "http-body 0.4.6",
@@ -245,6 +245,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "axum-extra"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "460fc6f625a1f7705c6cf62d0d070794e94668988b1c38111baeec177c715f7b"
+dependencies = [
+ "axum 0.8.1",
+ "axum-core 0.5.0",
+ "bytes",
+ "cookie 0.18.1",
+ "futures-util",
+ "http 1.2.0",
+ "http-body 1.0.1",
+ "http-body-util",
+ "mime",
+ "pin-project-lite",
+ "serde",
+ "tower 0.5.2",
+ "tower-layer",
+ "tower-service",
+]
+
+[[package]]
 name = "axum-sessions"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -252,7 +274,7 @@ checksum = "c84930174d586fdc66a8c317cdf48b8bb487a1d079c38efc67d81a80c11c664f"
 dependencies = [
  "async-session",
  "axum 0.6.20",
- "axum-extra",
+ "axum-extra 0.7.7",
  "futures",
  "http-body 0.4.6",
  "tokio",
@@ -436,6 +458,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7efb37c3e1ccb1ff97164ad95ac1606e8ccd35b3fa0a7d99a304c7f4a428cc24"
 dependencies = [
  "base64 0.21.7",
+ "hmac 0.12.1",
+ "percent-encoding",
+ "rand",
+ "sha2 0.10.8",
+ "subtle",
+ "time",
+ "version_check",
+]
+
+[[package]]
+name = "cookie"
+version = "0.18.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ddef33a339a91ea89fb53151bd0a4689cfce27055c291dfa69945475d22c747"
+dependencies = [
+ "base64 0.22.1",
  "hmac 0.12.1",
  "percent-encoding",
  "rand",
@@ -1657,7 +1695,9 @@ version = "0.1.0"
 dependencies = [
  "async-session",
  "axum 0.8.1",
+ "axum-extra 0.10.0",
  "axum-sessions",
+ "cookie 0.18.1",
  "dotenvy",
  "hyper 1.5.2",
  "reqwest",
@@ -2455,9 +2495,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.42.0"
+version = "1.43.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5cec9b21b0450273377fc97bd4c33a8acffc8c996c987a7c5b319a0083707551"
+checksum = "3d61fa4ffa3de412bfea335c6ecff681de2b609ba3c77ef3e00e521813a9ed9e"
 dependencies = [
  "backtrace",
  "bytes",
@@ -2473,9 +2513,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-macros"
-version = "2.4.0"
+version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "693d596312e88961bc67d7f1f97af8a70227d9f90c31bba5806eec004978d752"
+checksum = "6e06d43f1345a3bcd39f6a56dbb7dcab2ba47e68e8ac134855e7e2bdbaf8cab8"
 dependencies = [
  "proc-macro2",
  "quote",

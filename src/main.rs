@@ -1,6 +1,7 @@
 use axum::serve;
 use dotenvy::dotenv;
 use std::env;
+use std::sync::Arc;
 use tokio::net::TcpListener;
 use tokio::signal;
 use tower_http::trace::TraceLayer;
@@ -8,6 +9,7 @@ use tower_http::trace::TraceLayer;
 mod connect_db;
 mod handlers;
 mod routes;
+mod session;
 
 #[tokio::main]
 async fn main() {
@@ -25,7 +27,12 @@ async fn main() {
         .await
         .expect("Impossibile collegarsi alla porta");
 
-    let app = routes::create_routes(db_pool).layer(TraceLayer::new_for_http());
+    // Cookie
+    let cookie_key = session::get_cookie_key();
+    let shared_state = Arc::new(cookie_key);
+
+    // Routes
+    let app = routes::create_routes(db_pool, shared_state).layer(TraceLayer::new_for_http());
 
     println!("Server in ascolto su http://localhost:{port}");
     serve(listener, app)
