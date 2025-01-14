@@ -20,12 +20,14 @@ pub fn add_session(jar: SignedCookieJar, session: SessionData) -> SignedCookieJa
     let session_value =
         serde_json::to_string(&session).expect("Impossibile serializzare SessionData");
 
-    let cookie: Cookie = Cookie::build(("user_data", session_value))
+    let cookie: Cookie = Cookie::build(("session", session_value))
         .domain("localhost")
         .path("/")
         .secure(false) // TRUE in prod
         .http_only(true)
         .build();
+
+    println!("COOKIE CREATED: {:?}", cookie);
 
     jar.add(cookie)
 }

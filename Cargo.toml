@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 async-session = "3.0.0"
-axum = "0.8.1"
+axum = {version = "0.8.1", features = ["macros"]}
 axum-extra = { version = "0.10", features = ["cookie", "cookie-signed"  ] }
 axum-sessions = "0.6.1"
 cookie = "0.18.1"

@@ -20,8 +20,8 @@ pub struct PayloadCreateUser {
 
 pub async fn create_user(
     State(state): State<AppState>,
+    jar: SignedCookieJar,
     Json(payload): Json<PayloadCreateUser>,
-    jar: SignedCookieJar
 ) -> impl IntoResponse {
 
     let id = Uuid::new_v4();

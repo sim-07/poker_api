@@ -7,6 +7,7 @@ use uuid::Uuid;
 
 use crate::{routes::AppState, session::{add_session, read_session, SessionData}};
 
+
 #[derive(serde::Serialize)]
 struct NewGame {
     id: Uuid,
@@ -29,8 +30,8 @@ pub struct PayloadCreateGame {
 
 pub async fn create_game(
     State(state): State<AppState>,
+    jar: SignedCookieJar,
     Json(payload): Json<PayloadCreateGame>,
-    jar: SignedCookieJar
 ) -> impl IntoResponse {
     let game_id = Uuid::new_v4();
 
