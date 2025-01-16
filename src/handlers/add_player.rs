@@ -55,7 +55,7 @@ pub async fn add_player(
             return (
                 jar,
                 Json(json!({
-                    "error": "No game found with the given game_id",
+                    "error": "No game found",
                 })),
             );
         }
