@@ -6,7 +6,7 @@ use uuid::Uuid;
 use std::env;
 
 #[derive(Serialize, Deserialize)]
-pub struct SessionData {
+    pub struct SessionData {
     pub user_id: Option<Uuid>,
     pub game_id: Option<Uuid>
 }

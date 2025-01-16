@@ -33,6 +33,6 @@ pub fn create_routes(db_pool: Pool<Postgres>, shared_state: Arc<Key>) -> Router 
         )
         .route("/create_game", post(handlers::create_game::create_game))
         .route("/create_user", post(handlers::create_user::create_user))
-        //.route("/add_player", post(handlers::add_player::add_player))
+        .route("/add_player", post(handlers::add_player::add_player))
         .with_state(app_state)
 }

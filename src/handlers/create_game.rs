@@ -57,14 +57,15 @@ pub async fn create_game(
     };
 
     let _ = query!(
-        "INSERT INTO games (id, max_players, fill_with_bot, show_value_hand, initial_fiches, small_blind) 
-        VALUES ($1, $2, $3, $4, $5, $6)",
+        "INSERT INTO games (game_id, max_players, fill_with_bot, show_value_hand, initial_fiches, small_blind, players) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7)",
         game_id,
         payload.max_players,
         payload.fill_with_bot,
         payload.show_value_hand,
         payload.initial_fiches as i64,
-        payload.small_blind as i64
+        payload.small_blind as i64,
+        &vec![user_id.unwrap()]
     )
     .execute(&mut *transaction) 
     .await
