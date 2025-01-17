@@ -35,23 +35,15 @@ pub async fn create_game(
 ) -> impl IntoResponse {
     let game_id = Uuid::new_v4();
 
+    let mut conn = state.db_pool.acquire().await.unwrap();
+
+
     let user_id = match read_session(jar.clone()) {
         Some(session) => session.user_id,
         None => {
             return (
             jar,
             Json(json!({"error": "Error fetching user_id"})),
-            );
-        }
-    };
-
-    let mut transaction = match state.db_pool.begin().await {
-        Ok(tx) => tx,
-        Err(err) => {
-            eprintln!("Errore nell'avvio della transazione: {:?}", err);
-            return (
-                jar,
-                Json(json!({ "error": "Errore durante l'avvio della transazione" })),
             );
         }
     };
@@ -67,11 +59,9 @@ pub async fn create_game(
         payload.small_blind as i64,
         &vec![user_id.unwrap()]
     )
-    .execute(&mut *transaction) 
+    .execute(&mut *conn) 
     .await
     .unwrap();
-
-    transaction.commit().await.unwrap();
 
     let new_game = NewGame {
         id: game_id,

@@ -1,21 +1,17 @@
 use axum::{extract::State, response::IntoResponse, Json};
 use axum_extra::extract::SignedCookieJar;
+use bcrypt::{hash, DEFAULT_COST};
 use serde_json::json;
 use sqlx::query;
 use uuid::Uuid;
 
-use crate::session::{add_session, SessionData};
 use crate::routes::AppState;
-
-#[derive(serde::Serialize)]
-pub struct NewUser {
-    name: String,
-    id: Uuid
-}
+use crate::session::{add_session, SessionData};
 
 #[derive(serde::Deserialize, Debug)]
 pub struct PayloadCreateUser {
-    name: String
+    name: String,
+    pass: String,
 }
 
 pub async fn create_user(
@@ -23,34 +19,40 @@ pub async fn create_user(
     jar: SignedCookieJar,
     Json(payload): Json<PayloadCreateUser>,
 ) -> impl IntoResponse {
-
     let id = Uuid::new_v4();
 
-    let mut transaction = match state.db_pool.begin().await {
-        Ok(tx) => tx,
-        Err(err) => {
-            eprintln!("Errore nell'avvio della transazione: {:?}", err);
-            return (
-                jar,
-                Json(json!({ "error": "Errore durante l'avvio della transazione" })),
-            );
+    let mut conn = state.db_pool.acquire().await.unwrap();
+
+    let _ = match query!("SELECT * FROM users WHERE name = $1", payload.name)
+        .fetch_optional(&mut *conn)
+        .await
+    {
+        ///// Utente già esistente /////
+        Ok(Some(_)) => {
+            return (jar, Json(json!({"error" : "User already exist"})));
         }
-    };
 
-    let _ = query!(
-        "INSERT INTO users (name, id) VALUES ($1, $2)",
-        payload.name,
-        id
-    )
-    .execute(&mut *transaction) 
-    .await
-    .unwrap();
+        ///// Nessun utente con lo stesso nome /////
+        Ok(None) => {
 
-    transaction.commit().await.unwrap();
+            let hashed_pass = hash(&payload.pass, DEFAULT_COST).unwrap();
 
-    let new_user = NewUser {
-        id: id,
-        name: payload.name
+            let _ = query!(
+                "INSERT INTO users (name, pass, id) VALUES ($1, $2, $3)",
+                payload.name,
+                hashed_pass,
+                id,
+            )
+            .execute(&mut *conn)
+            .await
+            .unwrap();
+
+        }
+
+        ///// Errore nel db /////
+        Err(_) => {
+            return (jar, Json(json!({"error" : "Db error"})));
+        }
     };
 
     let session_data = SessionData {
@@ -63,7 +65,6 @@ pub async fn create_user(
         jar,
         Json(json!({
             "message": "User created successfully",
-            "user": new_user,
         })),
     )
 }

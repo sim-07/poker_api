@@ -10,14 +10,14 @@ use crate::{
 };
 
 #[derive(serde::Deserialize, Debug)]
-pub struct AddPlayer {
+pub struct AddPlayerPayload {
     game_id: Uuid,
 }
 
 pub async fn add_player(
     State(state): State<AppState>,
     jar: SignedCookieJar,
-    Json(payload): Json<AddPlayer>,
+    Json(payload): Json<AddPlayerPayload>,
 ) -> impl IntoResponse {
     println!("Payload received add_player: {:?}", payload);
 
@@ -40,9 +40,13 @@ pub async fn add_player(
     };
 
     let result = query!(
-        "UPDATE games 
-        SET players = array_append(players, $1)
-        WHERE game_id = $2",
+        "UPDATE games
+        SET players = 
+            CASE
+                WHEN NOT ($1 = ANY(players)) THEN array_append(players, $1)
+                ELSE players
+            END
+        WHERE game_id = $2;",
         user_id,
         payload.game_id
     )
@@ -73,7 +77,7 @@ pub async fn add_player(
     (
         jar,
         Json(json!({
-            "message": "User created successfully",
+            "message": "User added successfully",
         })),
     )
 }
