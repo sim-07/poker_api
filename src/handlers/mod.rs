@@ -1,4 +1,5 @@
 pub mod create_game;
-pub mod add_player;
+pub mod join_game;
 pub mod create_user;
 pub mod login;
+pub mod get_user_info;

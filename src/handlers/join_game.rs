@@ -14,12 +14,12 @@ pub struct AddPlayerPayload {
     game_id: Uuid,
 }
 
-pub async fn add_player(
+pub async fn join_game(
     State(state): State<AppState>,
     jar: SignedCookieJar,
     Json(payload): Json<AddPlayerPayload>,
 ) -> impl IntoResponse {
-    println!("Payload received add_player: {:?}", payload);
+    println!("Payload received join_game: {:?}", payload);
 
     let user_id = match read_session(jar.clone()) {
         Some(session) => session.user_id,
