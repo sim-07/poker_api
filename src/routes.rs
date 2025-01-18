@@ -5,6 +5,7 @@ use std::sync::Arc;
 use axum_extra::extract::cookie::Key;
 use axum::extract::FromRef;
 
+use crate::ws;
 use crate::handlers::{self};
 
 impl FromRef<AppState> for Key { // Per dire a Rust come ricavare key
@@ -36,5 +37,8 @@ pub fn create_routes(db_pool: Pool<Postgres>, shared_state: Arc<Key>) -> Router 
         .route("/join_game", post(handlers::join_game::join_game))
         .route("/get_user_info", post(handlers::get_user_info::get_user_info))
         .route("/login", post(handlers::login::login))
+        .route("/ws", get({
+            move |ws| ws::handle_ws(ws)
+        }))
         .with_state(app_state)
 }

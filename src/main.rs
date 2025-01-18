@@ -10,6 +10,7 @@ mod connect_db;
 mod handlers;
 mod routes;
 mod session;
+mod ws;
 
 #[tokio::main]
 async fn main() {
