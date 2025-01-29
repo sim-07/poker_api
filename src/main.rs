@@ -1,5 +1,7 @@
 use axum::serve;
+use cookie::Key;
 use dotenvy::dotenv;
+use redis::Client;
 use std::env;
 use std::sync::Arc;
 use tokio::net::TcpListener;
@@ -12,6 +14,13 @@ mod routes;
 mod session;
 mod ws;
 
+#[derive(Clone)]
+pub struct SharedState {
+    pub cookie_key: Key,
+    pub redis_client: Client,
+    pub db_pool: Arc<sqlx::Pool<sqlx::Postgres>>,
+}
+
 #[tokio::main]
 async fn main() {
     dotenv().ok();
@@ -21,8 +30,12 @@ async fn main() {
         .parse()
         .expect("PORT non valido");
 
+    // Connessione al db
     let db_pool = connect_db::connect_db().await;
     println!("Database pool: {:?}", db_pool);
+
+    // Connessione Redis
+    let redis_client = redis::Client::open("redis://127.0.0.1").unwrap();
 
     let listener = TcpListener::bind(("0.0.0.0", port))
         .await
@@ -30,10 +43,16 @@ async fn main() {
 
     // Cookie
     let cookie_key = session::get_cookie_key();
-    let shared_state = Arc::new(cookie_key);
+
+    // Stato condiviso
+    let shared_state = Arc::new(SharedState {
+        cookie_key,
+        redis_client,
+        db_pool: Arc::new(db_pool)
+    });
 
     // Routes
-    let app = routes::create_routes(db_pool, shared_state).layer(TraceLayer::new_for_http());
+    let app = routes::create_routes(shared_state).layer(TraceLayer::new_for_http());
 
     println!("Server in ascolto su http://localhost:{port}");
     serve(listener, app)

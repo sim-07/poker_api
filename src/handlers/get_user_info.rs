@@ -4,7 +4,7 @@ use serde_json::json;
 use sqlx::query;
 use uuid::Uuid;
 
-use crate::routes::AppState;
+use crate::SharedState;
 use crate::session::read_session;
 
 #[derive(serde::Serialize)]
@@ -15,7 +15,7 @@ struct Data {
 
 
 pub async fn get_user_info(
-    State(state): State<AppState>,
+    State(state): State<SharedState>,
     jar: SignedCookieJar,
 ) -> impl IntoResponse {
 

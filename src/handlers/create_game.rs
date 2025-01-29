@@ -5,7 +5,7 @@ use sqlx::query;
 use std::vec;
 use uuid::Uuid;
 
-use crate::{routes::AppState, session::{add_session, read_session, SessionData}};
+use crate::{SharedState, session::{add_session, read_session, SessionData}};
 
 
 #[derive(serde::Serialize)]
@@ -29,7 +29,7 @@ pub struct PayloadCreateGame {
 }
 
 pub async fn create_game(
-    State(state): State<AppState>,
+    State(state): State<SharedState>,
     jar: SignedCookieJar,
     Json(payload): Json<PayloadCreateGame>,
 ) -> impl IntoResponse {

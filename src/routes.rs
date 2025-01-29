@@ -1,31 +1,20 @@
 use axum::{routing::{get, post}, Router};
 use serde_json::json;
-use sqlx::{Pool, Postgres};
 use std::sync::Arc;
 use axum_extra::extract::cookie::Key;
 use axum::extract::FromRef;
 
 use crate::ws;
 use crate::handlers::{self};
+use crate::SharedState;
 
-impl FromRef<AppState> for Key { // Per dire a Rust come ricavare key
-    fn from_ref(state: &AppState) -> Self {
-        (*state.key).clone()
+impl FromRef<SharedState> for Key { // Per dire a Rust come ricavare key
+    fn from_ref(state: &SharedState) -> Self {
+        state.cookie_key.clone()
     }
 }
 
-#[derive(Clone)]
-pub struct AppState {
-    pub db_pool: Arc<Pool<Postgres>>,
-    pub key: Arc<Key>,
-}
-
-pub fn create_routes(db_pool: Pool<Postgres>, shared_state: Arc<Key>) -> Router {
-
-    let app_state = AppState {
-        db_pool: Arc::new(db_pool),
-        key: shared_state,
-    };  
+pub fn create_routes(shared_state: Arc<SharedState>) -> Router {
 
     Router::new()
         .route(
@@ -38,5 +27,5 @@ pub fn create_routes(db_pool: Pool<Postgres>, shared_state: Arc<Key>) -> Router 
         .route("/get_user_info", post(handlers::get_user_info::get_user_info))
         .route("/login", post(handlers::login::login))
         .route("/ws", get(ws::handle_ws))
-        .with_state(app_state)
+        .with_state((*shared_state).clone())
 }

@@ -5,7 +5,7 @@ use sqlx::query;
 use uuid::Uuid;
 
 use crate::{
-    routes::AppState,
+    SharedState,
     session::{add_session, read_session, SessionData},
 };
 
@@ -15,7 +15,7 @@ pub struct AddPlayerPayload {
 }
 
 pub async fn join_game(
-    State(state): State<AppState>,
+    State(state): State<SharedState>,
     jar: SignedCookieJar,
     Json(payload): Json<AddPlayerPayload>,
 ) -> impl IntoResponse {

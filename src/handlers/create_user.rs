@@ -5,7 +5,7 @@ use serde_json::json;
 use sqlx::query;
 use uuid::Uuid;
 
-use crate::routes::AppState;
+use crate::SharedState;
 use crate::session::{add_session, SessionData};
 
 #[derive(serde::Deserialize, Debug)]
@@ -15,7 +15,7 @@ pub struct PayloadCreateUser {
 }
 
 pub async fn create_user(
-    State(state): State<AppState>,
+    State(state): State<SharedState>,
     jar: SignedCookieJar,
     Json(payload): Json<PayloadCreateUser>,
 ) -> impl IntoResponse {
