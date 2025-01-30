@@ -34,9 +34,9 @@ pub async fn create_game(
                     serde_json::to_string(&game_data.players).unwrap(),
                 ),
                 ("pot", game_data.pot.to_string()),
-                ("turno", game_data.round.to_string()),
+                ("round", game_data.round.to_string()),
                 (
-                    "carte_uscite",
+                    "cards_released",
                     serde_json::to_string(&game_data.cards_released).unwrap(),
                 ),
             ],
