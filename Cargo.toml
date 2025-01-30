@@ -8,6 +8,8 @@ async-session = "3.0.0"
 axum = {version = "0.8.1", features = ["macros", "ws"]}
 axum-extra = { version = "0.10", features = ["cookie", "cookie-signed"  ] }
 axum-sessions = "0.6.1"
+bb8 = "0.9.0"
+bb8-redis = "0.20.0"
 bcrypt = "0.16.0"
 cookie = "0.18.1"
 dotenvy = "0.15.7"
