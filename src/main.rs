@@ -1,7 +1,6 @@
 use axum::serve;
 use cookie::Key;
 use dotenvy::dotenv;
-use redis::Client;
 use std::env;
 use std::sync::Arc;
 use tokio::net::TcpListener;

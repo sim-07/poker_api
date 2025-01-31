@@ -1,8 +1,8 @@
-use bb8_redis::bb8::Pool;
+use async_session::blake3::Hash;
 use redis::AsyncCommands;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::sync::Arc;
+use std::{collections::HashMap, io, sync::Arc};
+use uuid::Uuid;
 
 use crate::SharedState;
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -14,16 +14,23 @@ pub struct GameData {
     pub cards_released: Vec<String>,
 }
 
-pub async fn create_game(
+async fn redis_conn(
+    shared_state: &Arc<SharedState>,
+) -> Result<
+    bb8_redis::bb8::PooledConnection<'_, bb8_redis::RedisConnectionManager>,
+    redis::RedisError,
+> {
+    shared_state.redis_pool.get().await.map_err(|e| {
+        let io_error = io::Error::new(io::ErrorKind::Other, e.to_string());
+        redis::RedisError::from(io_error)
+    })
+}
+
+pub async fn handle_game(
     game_data: &GameData,
     shared_state: Arc<SharedState>,
 ) -> Result<(), redis::RedisError> {
-    
-    let mut con = shared_state
-        .redis_pool
-        .get()
-        .await
-        .map_err(|e| redis::RedisError::from((redis::ErrorKind::IoError, e.to_string())))?;
+    let mut con = redis_conn(&shared_state).await?;
 
     let _: () = con
         .hset_multiple(
@@ -46,11 +53,27 @@ pub async fn create_game(
     Ok(())
 }
 
-pub async fn update_game(
-    game_data: &GameData,
+pub async fn get_game_data(
+    game_id: String,
     shared_state: Arc<SharedState>,
-) -> Result<(), redis::RedisError> {
-    //TODO
+) -> Result<HashMap<String, String>, String> {
 
-    Ok(())
+    let mut con = match redis_conn(&shared_state).await {
+        Ok(con) => con,
+        Err(_) => return Err("Error fetching connection".to_string()),
+    };
+
+    let res: Result<HashMap<String, String>, redis::RedisError> =
+        con.hgetall(game_id).await;
+
+    match res {
+        Ok(data) => {
+            if data.is_empty() {
+                Err("No data found for gameid".to_string())
+            } else {
+                Ok(data)
+            }
+        },
+        Err(_) => Err("Error fetching data".to_string()),
+    }
 }
