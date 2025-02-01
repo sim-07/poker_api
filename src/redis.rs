@@ -28,7 +28,7 @@ async fn redis_conn(
 
 pub async fn handle_game(
     game_data: &GameData,
-    shared_state: Arc<SharedState>,
+    shared_state: &Arc<SharedState>,
 ) -> Result<(), redis::RedisError> {
     let mut con = redis_conn(&shared_state).await?;
 
@@ -51,7 +51,7 @@ pub async fn handle_game(
 
 pub async fn get_game_data(
     game_id: String,
-    shared_state: Arc<SharedState>,
+    shared_state: &Arc<SharedState>,
 ) -> Result<HashMap<String, String>, String> {
     let mut con = match redis_conn(&shared_state).await {
         Ok(con) => con,

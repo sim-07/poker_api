@@ -3,7 +3,6 @@ use axum_extra::extract::SignedCookieJar;
 use bcrypt::verify;
 use serde_json::json;
 use sqlx::query;
-use uuid::Uuid;
 
 use crate::SharedState;
 use crate::session::{add_session, SessionData};
@@ -19,11 +18,10 @@ pub async fn login(
     jar: SignedCookieJar,
     Json(payload): Json<PayloadLogin>,
 ) -> impl IntoResponse {
-    let id = Uuid::new_v4();
 
     let mut conn = state.db_pool.acquire().await.unwrap();
 
-    let _ = match query!("SELECT pass FROM users WHERE name = $1", payload.name)
+    let _ = match query!("SELECT pass, id FROM users WHERE name = $1", payload.name)
         .fetch_one(&mut *conn)
         .await
     {
@@ -33,7 +31,7 @@ pub async fn login(
                     Ok(true) => {
                         let session_data = SessionData {
                             game_id: None,
-                            user_id: Some(id),
+                            user_id: Some(record.id),
                         };
                         let jar = add_session(jar, session_data);
                         

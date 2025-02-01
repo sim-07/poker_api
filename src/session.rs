@@ -1,11 +1,12 @@
 use axum_extra::extract::cookie::Key;
 use axum_extra::extract::cookie::{Cookie, SignedCookieJar};
+use cookie::time::Duration;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use uuid::Uuid;
 use std::env;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
     pub struct SessionData {
     pub user_id: Option<Uuid>,
     pub game_id: Option<Uuid>
@@ -24,6 +25,7 @@ pub fn add_session(jar: SignedCookieJar, session: SessionData) -> SignedCookieJa
         .domain("localhost")
         .path("/")
         .secure(false) // TRUE in prod
+        .max_age(Duration::days(1))
         .http_only(true)
         .build();
 
@@ -33,8 +35,13 @@ pub fn add_session(jar: SignedCookieJar, session: SessionData) -> SignedCookieJa
 }
 
 pub fn read_session(jar: SignedCookieJar) -> Option<SessionData> {
-    jar.get("session")
-        .and_then(|cookie| serde_json::from_str(cookie.value()).ok())
+    
+    let cookie = jar.get("session")
+        .and_then(|cookie| serde_json::from_str(cookie.value()).ok());
+
+    println!("COOKIE READ: {:?}", cookie);
+
+    cookie
 }
 
 pub fn remove_session(jar: SignedCookieJar) -> SignedCookieJar {

@@ -31,6 +31,7 @@ pub async fn get_user_info(
         }
     };
 
+    println!("USER ID get_user_info: {:?}", user_id.unwrap());
 
     let data = match query!("SELECT * FROM users WHERE id = $1", user_id)
         .fetch_one(&mut *conn)

@@ -26,6 +26,7 @@ pub fn create_routes(shared_state: Arc<SharedState>) -> Router {
         .route("/join_game", post(handlers::join_game::join_game))
         .route("/get_user_info", post(handlers::get_user_info::get_user_info))
         .route("/login", post(handlers::login::login))
+        .route("/logout", post(handlers::logout::logout))
         .route("/ws", get(ws::handle_ws))
         .with_state((*shared_state).clone()) // Non posso passare direttamente Arc<>
 }

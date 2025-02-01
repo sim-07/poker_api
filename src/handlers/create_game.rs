@@ -40,7 +40,7 @@ pub async fn create_game(
         small_blind: payload.small_blind,
     };
 
-    let _ = redis::handle_game(&game_data, shared_state.into()).await;
+    let _ = redis::handle_game(&game_data, &shared_state.into()).await;
 
     let session_data = SessionData {
         game_id: Some(game_id),

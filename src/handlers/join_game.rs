@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::{extract::State, response::IntoResponse, Json};
 use axum_extra::extract::SignedCookieJar;
 use serde_json::json;
@@ -29,14 +31,29 @@ pub async fn join_game(
         }
     };
 
-    let ex_data = redis::get_game_data(payload.game_id.to_string(), shared_state.into()).await;
+    let shared_state = Arc::clone(&shared_state.into());
+    let ex_data = redis::get_game_data(payload.game_id.to_string(), &shared_state).await;
 
     match ex_data {
         Ok(ex_data) => {
 
-            // TODO Creare game_data con i dati di ex_data, poi aggiungere l'user_id trovato nella sessione e sovrascrivere il tutto su redis
+            // TODO aggiustare. Conversione in json dà problemi
+            let mut ex_data_json = serde_json::to_value(ex_data).unwrap();
 
-            let _ = redis::handle_game(&game_data, shared_state.into()).await;
+            if let Some(cards_released) = ex_data_json.get_mut("cards_released") {
+                if cards_released == &serde_json::json!("[]") {
+                    *cards_released = serde_json::json!([]);
+                }
+            }
+
+            println!("ex_data_json: {:?}", ex_data_json);
+            let mut game_data: redis::GameData = serde_json::from_value(ex_data_json).unwrap();
+
+            game_data.players.push(user_id.unwrap().to_string());
+
+            println!("game_data: {:?}", game_data);
+
+            let _ = redis::handle_game(&game_data, &shared_state).await;
 
             let session_data = SessionData {    
                 game_id: Some(payload.game_id),
@@ -53,7 +70,7 @@ pub async fn join_game(
             )
 
         },
-        Err(_) => return (jar, Json(json!({"error": "Error fetching data"})))
+        Err(e) => return (jar, Json(json!({"error": format!("Error fetching data: {}", e)})))
     }
     
 }
