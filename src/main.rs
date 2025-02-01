@@ -14,7 +14,7 @@ mod handlers;
 mod routes;
 mod session;
 mod ws;
-mod redis_store;
+mod redis;
 
 #[derive(Clone)]
 pub struct SharedState {
