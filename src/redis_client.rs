@@ -14,7 +14,7 @@ pub struct GameData {
     pub small_blind: u32,
 }
 
-async fn redis_conn(
+pub async fn redis_conn(
     shared_state: &Arc<SharedState>,
 ) -> Result<
     bb8_redis::bb8::PooledConnection<'_, bb8_redis::RedisConnectionManager>,

@@ -4,7 +4,7 @@ use serde_json::json;
 use std::vec;
 use uuid::Uuid;
 
-use crate::redis;
+use crate::redis_client;
 use crate::{
     session::{add_session, read_session, SessionData},
     SharedState,
@@ -30,7 +30,7 @@ pub async fn create_game(
         }
     };
 
-    let game_data = redis::GameData {
+    let game_data = redis_client::GameData {
         game_id: game_id.to_string(),
         players: vec![user_id.unwrap().to_string()],
         pot: 0,
@@ -40,7 +40,7 @@ pub async fn create_game(
         small_blind: payload.small_blind,
     };
 
-    let _ = redis::handle_game(&game_data, &shared_state.into()).await;
+    let _ = redis_client::handle_game(&game_data, &shared_state.into()).await;
 
     let session_data = SessionData {
         game_id: Some(game_id),

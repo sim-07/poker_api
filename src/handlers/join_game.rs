@@ -1,16 +1,16 @@
-use std::sync::Arc;
-
 use axum::{extract::State, response::IntoResponse, Json};
 use axum_extra::extract::SignedCookieJar;
+use redis::AsyncCommands;
 use serde_json::json;
+use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::{
-    SharedState,
     session::{add_session, read_session, SessionData},
+    SharedState,
 };
 
-use crate::redis;
+use crate::redis_client;
 
 #[derive(serde::Deserialize, Debug)]
 pub struct AddPlayerPayload {
@@ -31,46 +31,62 @@ pub async fn join_game(
         }
     };
 
-    let shared_state = Arc::clone(&shared_state.into());
-    let ex_data = redis::get_game_data(payload.game_id.to_string(), &shared_state).await;
+    let ex_data =
+        redis_client::get_game_data(payload.game_id.to_string(), &Arc::new(shared_state.clone())).await;
 
     match ex_data {
-        Ok(ex_data) => {
+        Ok(mut data) => {
+            if let Some(players_str) = data.get_mut("players") {
+                let mut players: Vec<String> = serde_json::from_str(players_str).unwrap_or_else(|_| vec![]);
 
-            // TODO aggiustare. Conversione in json dà problemi
-            let mut ex_data_json = serde_json::to_value(ex_data).unwrap();
-
-            if let Some(cards_released) = ex_data_json.get_mut("cards_released") {
-                if cards_released == &serde_json::json!("[]") {
-                    *cards_released = serde_json::json!([]);
+                let new_player = user_id.unwrap().to_string();
+                if !players.contains(&new_player) {
+                    players.push(new_player);
                 }
+
+                *players_str = serde_json::to_string(&players).unwrap();
+            } else {
+                return (jar, Json(json!({"error": "Error adding player"})));
             }
 
-            println!("ex_data_json: {:?}", ex_data_json);
-            let mut game_data: redis::GameData = serde_json::from_value(ex_data_json).unwrap();
+            let shared_state = Arc::new(shared_state.clone());
 
-            game_data.players.push(user_id.unwrap().to_string());
+            let mut con = match redis_client::redis_conn(&shared_state).await {
+                Ok(con) => con,
+                Err(_) => {
+                    return (
+                        jar,
+                        Json(json!({"error": "Error fetching Redis connection"})),
+                    )
+                }
+            };
 
-            println!("game_data: {:?}", game_data);
+            let game_key = payload.game_id.to_string();
 
-            let _ = redis::handle_game(&game_data, &shared_state).await;
+            let data_tuples: Vec<(&str, &str)> =
+                data.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
 
-            let session_data = SessionData {    
+            let _: () = con.hset_multiple(&game_key, &data_tuples).await.unwrap();
+
+            let session_data = SessionData {
                 game_id: Some(payload.game_id),
                 user_id: user_id,
             };
-        
+
             let jar = add_session(jar, session_data);
-        
+
             (
                 jar,
                 Json(json!({
                     "message": "User added successfully",
                 })),
             )
-
-        },
-        Err(e) => return (jar, Json(json!({"error": format!("Error fetching data: {}", e)})))
+        }
+        Err(e) => {
+            return (
+                jar,
+                Json(json!({"error": format!("Error fetching data: {}", e)})),
+            )
+        }
     }
-    
 }
