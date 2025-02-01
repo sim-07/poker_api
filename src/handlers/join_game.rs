@@ -61,12 +61,12 @@ pub async fn join_game(
                 }
             };
 
-            let game_key = payload.game_id.to_string();
+            let game_id = payload.game_id.to_string();
 
             let data_tuples: Vec<(&str, &str)> =
                 data.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
 
-            let _: () = con.hset_multiple(&game_key, &data_tuples).await.unwrap();
+            let _: () = con.hset_multiple(&game_id, &data_tuples).await.unwrap();
 
             let session_data = SessionData {
                 game_id: Some(payload.game_id),
