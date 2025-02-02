@@ -12,7 +12,7 @@ use crate::{handlers::handlers_game::poker_actions::{call, fold, raise}, session
 
 #[derive(Debug, Deserialize)]
 struct GameAction {
-    user_id: Uuid,
+    //user_id: Uuid,
     action: String,
     amount: Option<u32>,
 }
@@ -24,17 +24,22 @@ struct ServerResponse {
 }
 
 pub async fn handle_ws(ws: WebSocketUpgrade, jar: SignedCookieJar) -> Response {
+    println!("jar in ws: {:?}", jar);
     let user_id = match read_session(jar.clone()) {
         Some(session) => match session.user_id {
             Some(id) => id,
             None => {
+                println!("user_id is missing in session");
                 return Json(json!({"error": "user_id is missing in session"})).into_response();
             }
         },
         None => {
+            println!("Error fetching user_id in ws");
             return Json(json!({"error": "Error fetching user_id in ws"})).into_response();
         }
     };
+
+    println!("user_id in handle ws: {}", user_id);
 
     ws.on_upgrade(move |socket| handle_socket(socket, user_id))
 }

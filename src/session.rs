@@ -1,6 +1,7 @@
 use axum_extra::extract::cookie::Key;
 use axum_extra::extract::cookie::{Cookie, SignedCookieJar};
 use cookie::time::Duration;
+use cookie::SameSite;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use uuid::Uuid;
@@ -27,6 +28,7 @@ pub fn add_session(jar: SignedCookieJar, session: SessionData) -> SignedCookieJa
         .secure(false) // TRUE in prod
         .max_age(Duration::days(1))
         .http_only(true)
+        .same_site(SameSite::None)
         .build();
 
     println!("COOKIE CREATED: {:?}", cookie);
