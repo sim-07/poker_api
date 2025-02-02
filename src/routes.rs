@@ -20,12 +20,12 @@ pub fn create_routes(shared_state: SharedState) -> Router {
             "/",
             get(|| async { axum::Json(json!({ "message": "API HOME" })) }),
         )
-        .route("/create_game", post(handlers::create_game::create_game))
-        .route("/create_user", post(handlers::create_user::create_user))
-        .route("/join_game", post(handlers::join_game::join_game))
-        .route("/get_user_info", post(handlers::get_user_info::get_user_info))
-        .route("/login", post(handlers::login::login))
-        .route("/logout", post(handlers::logout::logout))
+        .route("/create_game", post(handlers::handlers_game::create_game::create_game))
+        .route("/join_game", post(handlers::handlers_game::join_game::join_game))
+        .route("/create_user", post(handlers::handlers_user::create_user::create_user))
+        .route("/get_user_info", post(handlers::handlers_user::get_user_info::get_user_info))
+        .route("/login", post(handlers::handlers_user::login::login))
+        .route("/logout", post(handlers::handlers_user::logout::logout))
         .route("/ws", get(ws::handle_ws))
         .with_state(shared_state)
 }

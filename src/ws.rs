@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use uuid::Uuid;
 
-use crate::{handlers::poker_actions::{call, fold, raise}, session::read_session};
+use crate::{handlers::handlers_game::poker_actions::{call, fold, raise}, session::read_session};
 
 #[derive(Debug, Deserialize)]
 struct GameAction {

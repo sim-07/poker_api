@@ -1,6 +1,5 @@
 use uuid::Uuid;
 
-
 pub fn fold(user_id: Uuid) -> String {
     format!("Player {} folded", user_id)
 }
