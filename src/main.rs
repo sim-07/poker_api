@@ -2,7 +2,6 @@ use axum::serve;
 use cookie::Key;
 use dotenvy::dotenv;
 use std::env;
-use std::sync::Arc;
 use tokio::net::TcpListener;
 use tokio::signal;
 use tower_http::trace::TraceLayer;
@@ -19,8 +18,8 @@ mod redis_client;
 #[derive(Clone)]
 pub struct SharedState {
     pub cookie_key: Key,
-    pub redis_pool: Arc<Pool<RedisConnectionManager>>,
-    pub db_pool: Arc<sqlx::Pool<sqlx::Postgres>>,
+    pub redis_pool: Pool<RedisConnectionManager>,
+    pub db_pool: sqlx::Pool<sqlx::Postgres>,
 }
 
 #[tokio::main]
@@ -38,7 +37,7 @@ async fn main() {
 
     // Connessione Redis
     let redis_manager = RedisConnectionManager::new("redis://127.0.0.1").unwrap();
-    let redis_pool = Arc::new(Pool::builder().build(redis_manager).await.unwrap());
+    let redis_pool = Pool::builder().build(redis_manager).await.unwrap();
 
     let listener = TcpListener::bind(("0.0.0.0", port))
         .await
@@ -48,11 +47,11 @@ async fn main() {
     let cookie_key = session::get_cookie_key();
 
     // Stato condiviso
-    let shared_state = Arc::new(SharedState {
+    let shared_state = SharedState {
         cookie_key,
         redis_pool,
-        db_pool: Arc::new(db_pool)
-    });
+        db_pool: db_pool
+    };
 
     // Routes
     let app = routes::create_routes(shared_state).layer(TraceLayer::new_for_http());

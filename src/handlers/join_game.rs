@@ -2,7 +2,6 @@ use axum::{extract::State, response::IntoResponse, Json};
 use axum_extra::extract::SignedCookieJar;
 use redis::AsyncCommands;
 use serde_json::json;
-use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::{
@@ -32,7 +31,7 @@ pub async fn join_game(
     };
 
     let ex_data =
-        redis_client::get_game_data(payload.game_id.to_string(), &Arc::new(shared_state.clone())).await;
+        redis_client::get_game_data(payload.game_id.to_string(), &shared_state).await;
 
     match ex_data {
         Ok(mut data) => {
@@ -49,7 +48,7 @@ pub async fn join_game(
                 return (jar, Json(json!({"error": "Error adding player"})));
             }
 
-            let shared_state = Arc::new(shared_state.clone());
+            let shared_state = shared_state.clone();
 
             let mut con = match redis_client::redis_conn(&shared_state).await {
                 Ok(con) => con,

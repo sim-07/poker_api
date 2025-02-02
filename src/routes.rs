@@ -1,6 +1,5 @@
 use axum::{routing::{get, post}, Router};
 use serde_json::json;
-use std::sync::Arc;
 use axum_extra::extract::cookie::Key;
 use axum::extract::FromRef;
 
@@ -14,7 +13,7 @@ impl FromRef<SharedState> for Key { // Per dire a Rust come ricavare key
     }
 }
 
-pub fn create_routes(shared_state: Arc<SharedState>) -> Router {
+pub fn create_routes(shared_state: SharedState) -> Router {
 
     Router::new()
         .route(
@@ -28,5 +27,5 @@ pub fn create_routes(shared_state: Arc<SharedState>) -> Router {
         .route("/login", post(handlers::login::login))
         .route("/logout", post(handlers::logout::logout))
         .route("/ws", get(ws::handle_ws))
-        .with_state((*shared_state).clone()) // Non posso passare direttamente Arc<>
+        .with_state(shared_state)
 }
