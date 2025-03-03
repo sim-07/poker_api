@@ -21,6 +21,8 @@ pub async fn get_user_info(
 
     let mut conn = state.db_pool.acquire().await.unwrap();
 
+    println!("jar in get_user_info: {:?}", jar);
+
     let user_id = match read_session(jar.clone()) {
         Some(session) => session.user_id,
         None => {

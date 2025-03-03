@@ -39,7 +39,9 @@ pub async fn handle_ws(ws: WebSocketUpgrade, jar: SignedCookieJar) -> Response {
         }
     };
 
-    println!("user_id in handle ws: {}", user_id);
+    //println!("user_id in handle ws: {}", user_id);
+
+    //let user_id= Uuid::new_v4();
 
     ws.on_upgrade(move |socket| handle_socket(socket, user_id))
 }
